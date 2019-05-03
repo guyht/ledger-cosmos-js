@@ -18,22 +18,30 @@ let assert = require('assert');
 let expect = require('chai').expect;
 let Q = require('q');
 
-const TIMEOUT = 2;
+const TIMEOUT = 10000;
 
 browser = true;
 comm = ledger.comm_u2f;
 
 function runExample() {
+    let start = new Date().getTime();
+    console.log("Start");
     return comm.create_async(TIMEOUT, true).then(
         function (comm) {
             try {
                 let dev = new ledger.App(comm);
-                return dev.get_version().then(function (result) {
+
+                let path = [44, 118, 0, 0, 0];           // Derivation path. First 3 items are automatically hardened!
+                let message = `{"account_number":"2","chain_id":"local-testnet","fee":{"amount":[],"gas":"500000"},"memo":"","msgs":[{"description":"test","initial_deposit":[{"amount":"1","denom":"stake"}],"proposal_type":"Text","proposer":"cosmos13xzqf9re68eeqfjaxhqh6g5rqfvhzpfkm8tuhh","title":"test"}],"sequence":"0"}`;
+
+                return dev.sign(path, message).then(function (result) {
+                    console.log(new Date().getTime() - start);
                     console.log(result);
                 })
             }
             catch (e) {
-                console.log(e)
+                console.log(e);
+                console.log(new Date().getTime() - start);
             }
         });
 }
